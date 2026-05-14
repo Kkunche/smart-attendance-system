@@ -1,1 +1,44 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
 
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Django files
+db.sqlite3
+*.log
+media/
+
+# VS Code settings
+.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# PyCharm
+.idea/
+
+# Machine Learning models
+*.h5
+*.pkl
+*.joblib
+
+# Temporary files
+*.tmp
+*.temp
