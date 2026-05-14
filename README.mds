@@ -1,0 +1,25 @@
+# Smart Attendance System Using Face Recognition
+
+## Overview
+AI-based attendance system using Python and OpenCV.
+
+## Features
+- Face Detection
+- Face Recognition
+- Automatic Attendance Marking
+- Real-time Webcam Detection
+
+## Technologies Used
+- Python
+- OpenCV
+- Face Recognition
+- NumPy
+- Pandas
+
+## How to Run
+1. Install requirements
+2. Add images inside images folder
+3. Run attendance.py
+
+## Author
+Kunche Dhanushka
