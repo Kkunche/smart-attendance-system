@@ -1,17 +1,16 @@
 import cv2
 import os
 import numpy as np
-import pandas as pd
 from datetime import datetime
 
 # Create recognizer
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
-# Haarcascade path
-cascadePath = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-faceCascade = cv2.CascadeClassifier(cascadePath)
+# Load face detector
+faceCascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+)
 
-# Training data
 path = 'images'
 
 faces = []
@@ -20,24 +19,32 @@ names = {}
 
 imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
 
+# Training images
 for idx, imagePath in enumerate(imagePaths):
 
-    img = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE)
+    grayImg = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE)
 
-    faces.append(img)
+    faces.append(grayImg)
+
     ids.append(idx)
 
     name = os.path.split(imagePath)[-1].split(".")[0]
+
     names[idx] = name
 
 recognizer.train(faces, np.array(ids))
 
-# Webcam
+# Create attendance file if not exists
+if not os.path.exists("attendance.csv"):
+
+    with open("attendance.csv", "w") as f:
+        f.write("Name,Time\n")
+
 cam = cv2.VideoCapture(0)
 
-print("Smart Attendance System Started")
+marked_names = []
 
-attendance_marked = []
+print("Attendance System Started")
 
 while True:
 
@@ -45,21 +52,29 @@ while True:
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    facesDetected = faceCascade.detectMultiScale(
+    detectedFaces = faceCascade.detectMultiScale(
         gray,
         scaleFactor=1.2,
         minNeighbors=5
     )
 
-    for (x, y, w, h) in facesDetected:
+    for (x, y, w, h) in detectedFaces:
 
-        id, confidence = recognizer.predict(gray[y:y+h, x:x+w])
+        id, confidence = recognizer.predict(
+            gray[y:y+h, x:x+w]
+        )
 
         if confidence < 70:
 
             name = names[id]
 
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0,255,0), 2)
+            cv2.rectangle(
+                frame,
+                (x, y),
+                (x+w, y+h),
+                (0, 255, 0),
+                2
+            )
 
             cv2.putText(
                 frame,
@@ -67,37 +82,25 @@ while True:
                 (x, y-10),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
-                (255,255,255),
+                (255, 255, 255),
                 2
             )
 
-            if name not in attendance_marked:
+            if name not in marked_names:
 
                 now = datetime.now()
-                time = now.strftime("%H:%M:%S")
 
-                data = {
-                    "Name": [name],
-                    "Time": [time]
-                }
+                current_time = now.strftime("%H:%M:%S")
 
-                df = pd.DataFrame(data)
+                with open("attendance.csv", "a") as f:
 
-                if not os.path.isfile("attendance.csv"):
-                    df.to_csv("attendance.csv", index=False)
-                else:
-                    df.to_csv(
-                        "attendance.csv",
-                        mode='a',
-                        header=False,
-                        index=False
-                    )
+                    f.write(f"{name},{current_time}\n")
 
-                attendance_marked.append(name)
+                marked_names.append(name)
 
-                print(f"Attendance Marked for {name}")
+                print(f"Attendance Marked: {name}")
 
-    cv2.imshow("Attendance System", frame)
+    cv2.imshow("Smart Attendance System", frame)
 
     if cv2.waitKey(1) == ord('q'):
         break
